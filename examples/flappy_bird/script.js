@@ -241,6 +241,6 @@ class Pipe {
   }
 }
 
-function on click() {
+function onClick() {
   fullscreen(true);
 }
