@@ -58,6 +58,7 @@ var NUM9 = 105;
 var NUMLOCK = 144;
 var SCROLLLOCK = 145;
 var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+var rotationMode = 'corner';
 
 function fill() {
   ctx.fillRect(0, 0, width, height);
@@ -184,7 +185,7 @@ function setMode(m) {
   } else if (m === 'complex') {
     mode = 'complex';
   } else {
-    throw 'The 2 modes are \'simple\' and \'complex\'.'
+    throw 'The available modes are \'simple\' and \'complex\'.'
   }
 }
 
@@ -225,7 +226,7 @@ function setAngleMode(m) {
   } else if (m === 'radian') {
     mode = 'radian';
   } else {
-    throw 'The 2 modes are \'degree\' and \'radian\'.'
+    throw 'The available modes are \'degree\' and \'radian\'.'
   }
 }
 
@@ -289,10 +290,32 @@ function triangle(x, y, rX, rY, rotation) {
   if (mode === 'simple') {
     ctx.beginPath();
   }
-  ctx.moveTo((x - (rX / 2)), (y - (rY / 2)));
-  ctx.lineTo((x + (rX / 2)), (y - (rY / 2)));
-  ctx.lineTo(x, (y + (rY / 2)));
-  ctx.lineTo((x - (rX / 2)), (y - (rY / 2)));
+  while (rotation > 2 * Math.PI) {
+    rotation -= 2 * Math.PI;
+  }
+  rotation = (2 * Math.PI) - rotation;
+  let tX0 = x - (rX / 2);
+  let tY0 = y - (rY / 2);
+  let temp = Math.sqrt(((y - tY0) ** 2) + ((x - tX0) ** 2));
+  let tempAngle = Math.atan2(tY0 - y, tX0 - x);
+  tX0 = x + (Math.cos(tempAngle + rotation) * temp)
+  tY0 = y + (Math.sin(tempAngle + rotation) * temp)
+  let tX1 = x + (rX / 2);
+  let tY1 = y - (rY / 2);
+  temp = Math.sqrt(((y - tY1) ** 2) + ((x - tX1) ** 2));
+  tempAngle = Math.atan2(tY1 - y, tX1 - x);
+  tX1 = x + (Math.cos(tempAngle + rotation) * temp)
+  tY1 = y + (Math.sin(tempAngle + rotation) * temp)
+  let tX2 = x;
+  let tY2 = y + (rY / 2);
+  temp = Math.sqrt(((y - tY2) ** 2) + ((x - tX2) ** 2));
+  tempAngle = Math.atan2(tY2 - y, tX2 - x);
+  tX2 = x + (Math.cos(tempAngle + rotation) * temp)
+  tY2 = y + (Math.sin(tempAngle + rotation) * temp)
+  ctx.moveTo(tX0, tY0);
+  ctx.lineTo(tX1, tY1);
+  ctx.lineTo(tX2, tY2);
+  ctx.lineTo(tX0, tY0);
   if (autoFlood) {
     ctx.fill();
   }
@@ -351,4 +374,81 @@ function textAlign(xAlign, yAlign) {
   if (yAlign != undefined) {
     ctx.textBaseline = yAlign;
   }
+}
+
+function sqrt(num) {
+  return Math.sqrt(num);
+}
+
+function image(file, x, y, width, height, rotation) {
+  if (x === undefined) {
+    x = 0;
+  }
+  if (y === undefined) {
+    y = 0;
+  }
+  if (rotation === undefined) {
+    rotation = 0;
+  }
+  if (angleMode === 'degree') {
+    rotation *= Math.PI / 180;
+  }
+  if (rotationMode === 'center') {
+    if (width != undefined) {
+      x += width / 2;
+    }
+    if (height != undefined) {
+      y += height / 2;
+    }
+  }
+  ctx.translate(x, y);
+  ctx.rotate(-rotation);
+  if (width != undefined && height != undefined) {
+    if (rotationMode === 'center') {
+      ctx.drawImage(file, (width / 2) * -1, (height / 2) * -1, width, height);
+    } else {
+      ctx.drawImage(file, 0, 0, width, height);
+    }
+  } else {
+    ctx.drawImage(file, 0, 0);
+  }
+  ctx.rotate(rotation);
+  ctx.translate(-x, -y);
+}
+
+function setRotationMode(m) {
+  if (m === 'corner') {
+    rotationMode = 'corner'
+  } else if (m === 'center') {
+    rotationMode = 'center';
+  } else {
+    throw 'The available modes are \'corner\' and \'center\'.'
+  }
+}
+
+function getAllCookies() {
+  let result = document.cookie.split(';');
+  for (let i in result) {
+    if (result[i].startsWith(' ')){
+      result[i] = result[i].substring(1);
+    }
+  }
+  return result;
+}
+
+function getCookie(id) {
+  for (let i in getAllCookies()) {
+    if (getAllCookies()[i].startsWith(id + '=')) {
+      return getAllCookies()[i].substring(id.length + 1);
+    }
+  }
+  return undefined;
+}
+
+function setCookie(id, value) {
+  document.cookie = id + '=' + value;
+}
+
+function deleteCookie(id) {
+  document.cookie = id + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
 }
