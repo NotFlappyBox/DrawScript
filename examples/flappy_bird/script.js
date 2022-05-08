@@ -240,3 +240,7 @@ class Pipe {
     return this.passed;
   }
 }
+
+function on click() {
+  fullscreen(true);
+}
