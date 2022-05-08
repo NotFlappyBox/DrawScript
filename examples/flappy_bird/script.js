@@ -18,7 +18,7 @@ jump[2].volume = 0.25;
 var jumpTime = 0;
 var loading = true;
 var loadStep = 0;
-var loadAmount = 6;
+var loadAmount = 7;
 jump[0].onloadeddata = function() {
   loadStep++;
   if (loadStep >= loadAmount) {
@@ -61,14 +61,26 @@ faster.onloadeddata = function() {
   }
 }
 var speed = 3;
-log(isMobile)
+var bird = new Image();
+bird.src = 'flappy_bird.png';
+birdRotation = 0;
+bird.onload = function() {
+  loadStep++;
+  if (loadStep >= loadAmount) {
+    loading = false;
+  }
+}
+setRotationMode('center');
+if (getCookie('highscore') === undefined) {
+  setCookie('highscore', 0);
+}
 
 function onFrame() {
   color('#2986cc')
   fill()
-  color('#8fce00')
-  rect(0, height - 40, width, 40)
   if (loading) {
+    color('#8fce00')
+    rect(0, height - 40, width, 40)
     color('#ffffff')
     textAlign('center', 'middle')
     font('Arial', 50)
@@ -77,8 +89,17 @@ function onFrame() {
     for (let i in pipes) {
       pipes[i].draw()
     }
+    color('#8fce00')
+    rect(0, height - 40, width, 40)
     color('yellow')
-    rect(200, birdY, 40, 40)
+    let tempRotation = birdYVel * 3;
+    if (tempRotation > 90) {
+      tempRotation = 90;
+    }
+    if (tempRotation < -90) {
+      tempRotation = -90;
+    }
+    image(bird, 200, birdY, 40, 41, tempRotation)
     birdY -= birdYVel
     if (birdY >= height - 80 && !die) {
       birdY = height - 80
@@ -123,7 +144,7 @@ function onFrame() {
     if (start) {
       if (pipeTick >= 180) {
         pipeTick = 0;
-        pipes.push(new Pipe(width + 30, random(95, height - 135)))
+        pipes.push(new Pipe(width + 50, random(95, height - 135)))
       }
       pipeTick++;
     }
@@ -145,6 +166,9 @@ function onFrame() {
         dieTick++;
         if (dieTick >= 60) {
           gameOver = true;
+          if (score > Number(getCookie('highscore'))) {
+            setCookie('highscore', score);
+          }
         }
       } else {
         dieFade += 20;
@@ -153,7 +177,8 @@ function onFrame() {
         }
         textAlign('center', 'middle')
         alpha(255 - dieFade)
-        text('Your Score: ' + score, width / 2, height / 2)
+        text('Your Score: ' + score, width / 2, (height / 2) - 45)
+        text("Highscore: " + getCookie('highscore'), width / 2, (height / 2) + 45)
         alpha(0)
       }
     }
@@ -219,6 +244,9 @@ class Pipe {
     color('#0bce00')
     rect(this.x, this.y + 95, 60, height - (this.y + 135))
     rect(this.x, 0, 60, this.y - 95)
+    color('#0db004')
+    rect(this.x - 20, this.y + 95, 100, 30)
+    rect(this.x - 20, this.y - 125, 100, 30)
     if (!die) {
       this.x -= speed;
     }
