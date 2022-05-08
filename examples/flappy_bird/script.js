@@ -244,3 +244,7 @@ class Pipe {
 function onClick() {
   fullscreen(true);
 }
+
+function onPageResize() {
+  resize(displayWidth, displayHeight);
+}
